@@ -119,7 +119,7 @@ func (ac *AccrualService) fetchOrder(e *echo.Echo, orderNumber string) (*models.
 	}
 
 	url := fmt.Sprintf("%s/api/orders/%s", ac.accrualBaseURL, orderNumber)
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequest(http.MethodGet, url, http.NoBody)
 	if err != nil {
 		e.Logger.Error(err)
 		return res, errors.New("cannot create request: " + err.Error())
