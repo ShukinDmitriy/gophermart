@@ -22,8 +22,8 @@ import (
 	"time"
 )
 
-// init is invoked before main()
-func init() {
+// loadEnvFile is invoked before main()
+func loadEnvFile() {
 	// loads values from .env into the system
 	if err := godotenv.Load(); err != nil {
 		log.Print("No .env file found")
@@ -31,6 +31,8 @@ func init() {
 }
 
 func main() {
+	loadEnvFile()
+
 	conf := config.NewConfig()
 	parseFlags(conf)
 	parseEnvs(conf)
@@ -73,7 +75,7 @@ func main() {
 
 	jwtMiddleware := echojwt.WithConfig(echojwt.Config{
 		BeforeFunc: auth.BeforeFunc,
-		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+		NewClaimsFunc: func(_ echo.Context) jwt.Claims {
 			return &auth.Claims{}
 		},
 		SigningKey:    []byte(auth.GetJWTSecret()),

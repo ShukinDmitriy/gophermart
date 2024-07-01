@@ -93,7 +93,10 @@ func GetUserID(c echo.Context) uint {
 	}
 	u := c.Get("user").(*jwt.Token)
 
-	claims := u.Claims.(*Claims)
+	claims, ok := u.Claims.(*Claims)
+	if !ok {
+		return 0
+	}
 
 	return claims.ID
 }

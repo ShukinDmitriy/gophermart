@@ -37,9 +37,9 @@ func CreateOrder() echo.HandlerFunc {
 		if existOrder != nil {
 			if existOrder.UserID == currentUserID {
 				return c.JSON(http.StatusOK, nil)
-			} else {
-				return c.JSON(http.StatusConflict, nil)
 			}
+
+			return c.JSON(http.StatusConflict, nil)
 		}
 
 		order, err := application.App.OrderRepository.Create(orderNumberString, currentUserID)

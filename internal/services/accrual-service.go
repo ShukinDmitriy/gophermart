@@ -152,6 +152,10 @@ func (ac *AccrualService) fetchOrder(e *echo.Echo, orderNumber string) (*models.
 		return res, nil
 	case http.StatusTooManyRequests:
 		e.Logger.Info("many requests ", orderNumber)
+
+		// В задании указано "No more than N requests per minute allowed" значит будет простаивать 60 секунд
+		time.Sleep(60 * time.Second)
+
 		return res, errors.New("response too many request")
 	case http.StatusInternalServerError:
 		e.Logger.Info("internal server error", orderNumber)
