@@ -32,7 +32,7 @@ var _ = Describe("AccrualService", func() {
 		Order:  processingOrderNumber,
 		Status: entities.OrderStatusProcessing,
 	}
-	accrualProcessingResponseJson, _ := json.Marshal(accrualProcessingResponse)
+	accrualProcessingResponseJSON, _ := json.Marshal(accrualProcessingResponse)
 	accrualNoContentResponse := models.AccrualOrderResponse{
 		Order:  noContentOrderNumber,
 		Status: entities.OrderStatusProcessing,
@@ -42,7 +42,7 @@ var _ = Describe("AccrualService", func() {
 		Status:  entities.OrderStatusProcessed,
 		Accrual: 123.45,
 	}
-	accrualProcessedResponseJson, _ := json.Marshal(accrualProcessedResponse)
+	accrualProcessedResponseJSON, _ := json.Marshal(accrualProcessedResponse)
 
 	BeforeEach(func() {
 		e = echo.New()
@@ -52,10 +52,10 @@ var _ = Describe("AccrualService", func() {
 		client := mockhttp.NewClient(
 			mockhttp.NewClientEndpoint().
 				When(mockhttp.Request().GET(fmt.Sprintf("/api/orders/%s", processingOrderNumber))).
-				Respond(mockhttp.Response().StatusCode(http.StatusOK).Body(accrualProcessingResponseJson)),
+				Respond(mockhttp.Response().StatusCode(http.StatusOK).Body(accrualProcessingResponseJSON)),
 			mockhttp.NewClientEndpoint().
 				When(mockhttp.Request().GET(fmt.Sprintf("/api/orders/%s", processedOrderNumber))).
-				Respond(mockhttp.Response().StatusCode(http.StatusOK).Body(accrualProcessedResponseJson)),
+				Respond(mockhttp.Response().StatusCode(http.StatusOK).Body(accrualProcessedResponseJSON)),
 			mockhttp.NewClientEndpoint().
 				When(mockhttp.Request().GET(fmt.Sprintf("/api/orders/%s", noContentOrderNumber))).
 				Respond(mockhttp.Response().StatusCode(http.StatusNoContent)),

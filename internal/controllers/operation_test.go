@@ -30,7 +30,7 @@ var _ = Describe("Operation", func() {
 		Order: "12345678903",
 		Sum:   123.45,
 	}
-	createWithdrawRequestJson, _ := json.Marshal(createWithdrawRequest)
+	createWithdrawRequestJSON, _ := json.Marshal(createWithdrawRequest)
 	account := &entities.Account{
 		Model: gorm.Model{
 			ID: 7,
@@ -62,7 +62,7 @@ var _ = Describe("Operation", func() {
 	Describe("CreateWithdraw", func() {
 		It("should return the correct answer", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			authService.EXPECT().GetUserID(c).Return(userID)
@@ -80,7 +80,7 @@ var _ = Describe("Operation", func() {
 
 		It("should return an error if the user is not found", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			authService.EXPECT().GetUserID(c).Return(0)
@@ -95,7 +95,7 @@ var _ = Describe("Operation", func() {
 
 		It("should return an error if the account is not found", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			authService.EXPECT().GetUserID(c).Return(userID)
@@ -111,7 +111,7 @@ var _ = Describe("Operation", func() {
 
 		It("should return an error if there are not enough funds", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			authService.EXPECT().GetUserID(c).Return(userID)
@@ -132,7 +132,7 @@ var _ = Describe("Operation", func() {
 
 		It("should return an error if the requested order does not belong to the user", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			authService.EXPECT().GetUserID(c).Return(userID)
@@ -151,7 +151,7 @@ var _ = Describe("Operation", func() {
 
 		It("should return an error if the write-off could not be created", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(createWithdrawRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			authService.EXPECT().GetUserID(c).Return(userID)

@@ -28,7 +28,7 @@ var _ = Describe("User", func() {
 		Login:    "fxf9kP0pO4w",
 		Password: "QT4jmi5LhBCDgusiqObdgvfS",
 	}
-	userRequestJson, _ := json.Marshal(userRequest)
+	userRequestJSON, _ := json.Marshal(userRequest)
 	user := &entities.User{
 		Model: gorm.Model{
 			ID: uint(1),
@@ -40,7 +40,7 @@ var _ = Describe("User", func() {
 		Login:    "fx1",
 		Password: "QT4",
 	}
-	userInvalidRequestJson, _ := json.Marshal(userInvalidRequest)
+	userInvalidRequestJSON, _ := json.Marshal(userInvalidRequest)
 	userRegisterResponse := &models.UserInfoResponse{
 		ID:    uint(1),
 		Login: "fxf9kP0pO4w",
@@ -60,7 +60,7 @@ var _ = Describe("User", func() {
 	Describe("User register", func() {
 		It("should return the correct answer", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(nil, nil)
@@ -83,7 +83,7 @@ var _ = Describe("User", func() {
 
 		It("should return an error if the cookie could not be created", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(nil, nil)
@@ -100,7 +100,7 @@ var _ = Describe("User", func() {
 
 		It("should return an error if the user could not be created", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(nil, nil)
@@ -116,7 +116,7 @@ var _ = Describe("User", func() {
 
 		It("should return an error if the user could not be created", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(nil, nil)
@@ -132,7 +132,7 @@ var _ = Describe("User", func() {
 
 		It("should return an error if the login is already taken", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(&entities.User{Login: userRequest.Login}, nil)
@@ -147,7 +147,7 @@ var _ = Describe("User", func() {
 
 		It("should return an error if the login could not be verified", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(nil, errors.New("test error"))
@@ -162,7 +162,7 @@ var _ = Describe("User", func() {
 
 		It("should return a validation error", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userInvalidRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userInvalidRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 
@@ -187,7 +187,7 @@ var _ = Describe("User", func() {
 	Describe("User login", func() {
 		It("should return the correct answer", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(user, nil)
@@ -215,7 +215,7 @@ var _ = Describe("User", func() {
 
 		It("should return an error if the cookie could not be created", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(user, nil)
@@ -238,7 +238,7 @@ var _ = Describe("User", func() {
 
 		It("should return an error if the passwords do not match", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(&entities.User{
@@ -256,7 +256,7 @@ var _ = Describe("User", func() {
 
 		It("should return an error if the user is not found", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(nil, nil)
@@ -271,7 +271,7 @@ var _ = Describe("User", func() {
 
 		It("should return an error if it was not possible to get the user", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 			userRepository.EXPECT().FindBy(models.UserSearchFilter{Login: userRequest.Login}).Return(user, errors.New("test error"))
@@ -286,7 +286,7 @@ var _ = Describe("User", func() {
 
 		It("should return a validation error", func() {
 			// Arrange
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userInvalidRequestJson)))
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(userInvalidRequestJSON)))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			c = e.NewContext(req, rec)
 
