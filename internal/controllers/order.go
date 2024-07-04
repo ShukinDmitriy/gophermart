@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	"github.com/ShukinDmitriy/gophermart/internal/application"
 	"github.com/ShukinDmitriy/gophermart/internal/auth"
+	"github.com/ShukinDmitriy/gophermart/internal/repositories"
+	"github.com/ShukinDmitriy/gophermart/internal/services"
 	"github.com/labstack/echo/v4"
 	"github.com/theplant/luhn"
 	"io"
@@ -10,7 +11,26 @@ import (
 	"strconv"
 )
 
-func CreateOrder() echo.HandlerFunc {
+type OrderController struct {
+	authService     auth.AuthServiceInterface
+	orderRepository repositories.OrderRepositoryInterface
+	accrualService  services.AccrualServiceInterface
+}
+
+func NewOrderController(
+	authService auth.AuthServiceInterface,
+	orderRepository repositories.OrderRepositoryInterface,
+	accrualService services.AccrualServiceInterface,
+) *OrderController {
+	return &OrderController{
+		authService:     authService,
+		orderRepository: orderRepository,
+		accrualService:  accrualService,
+	}
+}
+
+// CreateOrder Создать заказ
+func (controller *OrderController) CreateOrder() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		body, err := io.ReadAll(c.Request().Body)
 		defer c.Request().Body.Close()
@@ -28,12 +48,12 @@ func CreateOrder() echo.HandlerFunc {
 			return c.JSON(http.StatusUnprocessableEntity, nil)
 		}
 
-		existOrder, err := application.App.OrderRepository.FindByNumber(orderNumberString)
+		existOrder, err := controller.orderRepository.FindByNumber(orderNumberString)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, nil)
 		}
 
-		currentUserID := auth.GetUserID(c)
+		currentUserID := controller.authService.GetUserID(c)
 		if existOrder != nil {
 			if existOrder.UserID == currentUserID {
 				return c.JSON(http.StatusOK, nil)
@@ -42,23 +62,23 @@ func CreateOrder() echo.HandlerFunc {
 			return c.JSON(http.StatusConflict, nil)
 		}
 
-		order, err := application.App.OrderRepository.Create(orderNumberString, currentUserID)
+		order, err := controller.orderRepository.Create(orderNumberString, currentUserID)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, nil)
 		}
 
-		application.App.AccrualService.SendOrderToQueue(*order)
+		controller.accrualService.SendOrderToQueue(*order)
 
 		return c.JSON(http.StatusAccepted, nil)
 	}
 }
 
 // GetOrders Получение списка загруженных номеров заказов
-func GetOrders() echo.HandlerFunc {
+func (controller *OrderController) GetOrders() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUserID := auth.GetUserID(c)
+		currentUserID := controller.authService.GetUserID(c)
 
-		orders, err := application.App.OrderRepository.GetOrdersByUserID(currentUserID)
+		orders, err := controller.orderRepository.GetOrdersByUserID(currentUserID)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, nil)
 		}

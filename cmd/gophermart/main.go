@@ -6,9 +6,7 @@ import (
 	"github.com/ShukinDmitriy/gophermart/internal/application"
 	"github.com/ShukinDmitriy/gophermart/internal/auth"
 	"github.com/ShukinDmitriy/gophermart/internal/config"
-	"github.com/ShukinDmitriy/gophermart/internal/controllers"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -22,16 +20,8 @@ import (
 	"time"
 )
 
-// loadEnvFile is invoked before main()
-func loadEnvFile() {
-	// loads values from .env into the system
-	if err := godotenv.Load(); err != nil {
-		log.Print("No .env file found")
-	}
-}
-
 func main() {
-	loadEnvFile()
+	LoadEnvFile()
 
 	conf := config.NewConfig()
 	parseFlags(conf)
@@ -74,14 +64,14 @@ func main() {
 	e.Use(middleware.Decompress())
 
 	jwtMiddleware := echojwt.WithConfig(echojwt.Config{
-		BeforeFunc: auth.BeforeFunc,
+		BeforeFunc: application.App.AuthService.BeforeFunc,
 		NewClaimsFunc: func(_ echo.Context) jwt.Claims {
 			return &auth.Claims{}
 		},
 		SigningKey:    []byte(auth.GetJWTSecret()),
 		SigningMethod: jwt.SigningMethodHS256.Alg(),
 		TokenLookup:   "cookie:access-token", // "<source>:<name>"
-		ErrorHandler:  auth.JWTErrorChecker,
+		ErrorHandler:  application.App.AuthService.JWTErrorChecker,
 	})
 
 	// routes
@@ -92,13 +82,13 @@ func main() {
 	//POST /api/user/balance/withdraw — запрос на списание баллов с накопительного счёта в счёт оплаты нового заказа;
 	//GET /api/user/withdrawals — получение информации о выводе средств с накопительного счёта пользователем.
 
-	e.POST("/api/user/register", controllers.UserRegister())
-	e.POST("/api/user/login", controllers.UserLogin())
-	e.POST("/api/user/orders", controllers.CreateOrder(), jwtMiddleware)
-	e.GET("/api/user/orders", controllers.GetOrders(), jwtMiddleware)
-	e.GET("/api/user/balance", controllers.GetBalance(), jwtMiddleware)
-	e.POST("/api/user/balance/withdraw", controllers.CreateWithdraw(), jwtMiddleware)
-	e.GET("/api/user/withdrawals", controllers.GetWithdrawals(), jwtMiddleware)
+	e.POST("/api/user/register", application.App.UserController.UserRegister())
+	e.POST("/api/user/login", application.App.UserController.UserLogin())
+	e.POST("/api/user/orders", application.App.OrderController.CreateOrder(), jwtMiddleware)
+	e.GET("/api/user/orders", application.App.OrderController.GetOrders(), jwtMiddleware)
+	e.GET("/api/user/balance", application.App.BalanceController.GetBalance(), jwtMiddleware)
+	e.POST("/api/user/balance/withdraw", application.App.OperationController.CreateWithdraw(), jwtMiddleware)
+	e.GET("/api/user/withdrawals", application.App.OperationController.GetWithdrawals(), jwtMiddleware)
 
 	// Start gophermart
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)

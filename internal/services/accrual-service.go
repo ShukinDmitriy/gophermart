@@ -29,10 +29,8 @@ func NewAccrualService(
 	accountRepository repositories.AccountRepositoryInterface,
 	operationRepository repositories.OperationRepositoryInterface,
 	orderRepository repositories.OrderRepositoryInterface,
+	httpClient *http.Client,
 ) *AccrualService {
-	httpClient := &http.Client{
-		Timeout: 10 * time.Second,
-	}
 	orderChan := make(chan entities.Order, 1000)
 	failedOrderChan := make(chan entities.Order, 1000)
 
@@ -73,9 +71,6 @@ func (ac *AccrualService) ProcessFailedOrders(e *echo.Echo) {
 		}
 
 	}
-}
-
-func (ac *AccrualService) processOrders(e *echo.Echo, orderChan chan entities.Order) {
 }
 
 func (ac *AccrualService) processOrder(e *echo.Echo, order entities.Order) {

@@ -16,7 +16,13 @@ func ExtractErrors(err error) ValidationError {
 		return res
 	}
 
-	for _, err := range err.(validator.ValidationErrors) {
+	var validationErrors validator.ValidationErrors
+	ok := errors.As(err, &validationErrors)
+	if !ok {
+		return res
+	}
+
+	for _, err := range validationErrors {
 		field := strings.ToLower(err.Field())
 		actualTag := err.ActualTag()
 		res[field] = map[string]bool{

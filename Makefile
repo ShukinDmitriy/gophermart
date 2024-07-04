@@ -14,3 +14,10 @@ migrate-down:
 
 migrate-down-all:
 	migrate -database ${DATABASE_URI} -path ./db/migrations down -all
+
+test-cover:
+	go test -v -coverprofile=coverage.out ./internal/* && go tool cover -html=coverage.out -o coverage.html
+
+build-mocks:
+	@go get github.com/vektra/mockery/v2@v2.43.2
+	@~/go/bin/mockery
