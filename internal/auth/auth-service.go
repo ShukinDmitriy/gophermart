@@ -1,14 +1,15 @@
 package auth
 
 import (
-	"github.com/ShukinDmitriy/gophermart/internal/models"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/ShukinDmitriy/gophermart/internal/models"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 )
 
 const (
@@ -99,7 +100,10 @@ func (authService *AuthService) GetUserID(c echo.Context) uint {
 	if c.Get("user") == nil {
 		return 0
 	}
-	u := c.Get("user").(*jwt.Token)
+	u, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return 0
+	}
 
 	claims, ok := u.Claims.(*Claims)
 	if !ok {

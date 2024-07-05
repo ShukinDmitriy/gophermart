@@ -1,13 +1,14 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/ShukinDmitriy/gophermart/internal/auth"
 	"github.com/ShukinDmitriy/gophermart/internal/models"
 	"github.com/ShukinDmitriy/gophermart/internal/repositories"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 
 type UserController struct {

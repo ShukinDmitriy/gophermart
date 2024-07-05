@@ -1,12 +1,13 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/ShukinDmitriy/gophermart/internal/auth"
 	"github.com/ShukinDmitriy/gophermart/internal/entities"
 	"github.com/ShukinDmitriy/gophermart/internal/models"
 	"github.com/ShukinDmitriy/gophermart/internal/repositories"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 type OperationController struct {

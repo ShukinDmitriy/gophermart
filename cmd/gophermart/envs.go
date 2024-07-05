@@ -1,10 +1,11 @@
 package main
 
 import (
+	"os"
+
 	"github.com/ShukinDmitriy/gophermart/internal/config"
 	"github.com/joho/godotenv"
 	"github.com/labstack/gommon/log"
-	"os"
 )
 
 // LoadEnvFile is invoked before main()

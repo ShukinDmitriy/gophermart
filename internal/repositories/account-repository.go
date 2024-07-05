@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+
 	"github.com/ShukinDmitriy/gophermart/internal/entities"
 	"gorm.io/gorm"
 )

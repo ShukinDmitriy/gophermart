@@ -3,6 +3,10 @@ package controllers_test
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+
 	"github.com/ShukinDmitriy/gophermart/internal/models"
 
 	//"encoding/json"
@@ -17,10 +21,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	//"gorm.io/gorm"
-	"net/http"
-	"net/http/httptest"
 	//"strconv"
-	"strings"
 )
 
 var _ = Describe("Order", func() {

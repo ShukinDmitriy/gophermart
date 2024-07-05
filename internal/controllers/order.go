@@ -1,14 +1,15 @@
 package controllers
 
 import (
+	"io"
+	"net/http"
+	"strconv"
+
 	"github.com/ShukinDmitriy/gophermart/internal/auth"
 	"github.com/ShukinDmitriy/gophermart/internal/repositories"
 	"github.com/ShukinDmitriy/gophermart/internal/services"
 	"github.com/labstack/echo/v4"
 	"github.com/theplant/luhn"
-	"io"
-	"net/http"
-	"strconv"
 )
 
 type OrderController struct {

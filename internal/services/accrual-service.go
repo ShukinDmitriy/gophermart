@@ -3,15 +3,16 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/ShukinDmitriy/gophermart/internal/entities"
 	"github.com/ShukinDmitriy/gophermart/internal/models"
 	"github.com/ShukinDmitriy/gophermart/internal/repositories"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"io"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 type AccrualService struct {

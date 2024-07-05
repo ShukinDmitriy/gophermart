@@ -3,10 +3,11 @@ package repositories
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/ShukinDmitriy/gophermart/internal/entities"
 	"github.com/ShukinDmitriy/gophermart/internal/models"
 	"gorm.io/gorm"
-	"time"
 )
 
 var operationRepository *OperationRepository
@@ -50,7 +51,6 @@ func (r *OperationRepository) GetWithdrawnByAccountID(accountID uint) (float32, 
 
 func (r *OperationRepository) CreateWithdrawn(accountID uint, orderNumber string, sum float32) error {
 	systemWithdrawnAccount, err := accountRepository.GetSystemWithdrawnAccountID()
-
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,6 @@ func (r *OperationRepository) CreateWithdrawn(accountID uint, orderNumber string
 
 func (r *OperationRepository) CreateAccrual(accountID uint, orderNumber string, sum float32) error {
 	systemWithdrawnAccount, err := accountRepository.GetSystemWithdrawnAccountID()
-
 	if err != nil {
 		return err
 	}

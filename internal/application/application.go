@@ -1,14 +1,15 @@
 package application
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/ShukinDmitriy/gophermart/internal/auth"
 	"github.com/ShukinDmitriy/gophermart/internal/config"
 	"github.com/ShukinDmitriy/gophermart/internal/controllers"
 	"github.com/ShukinDmitriy/gophermart/internal/repositories"
 	"github.com/ShukinDmitriy/gophermart/internal/services"
 	"gorm.io/gorm"
-	"net/http"
-	"time"
 )
 
 var App *Application

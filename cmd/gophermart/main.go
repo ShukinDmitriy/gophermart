@@ -3,6 +3,11 @@ package main
 import (
 	"context"
 	"errors"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
+
 	"github.com/ShukinDmitriy/gophermart/internal/application"
 	"github.com/ShukinDmitriy/gophermart/internal/auth"
 	"github.com/ShukinDmitriy/gophermart/internal/config"
@@ -14,10 +19,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
 )
 
 func main() {
@@ -75,12 +76,12 @@ func main() {
 	})
 
 	// routes
-	//POST /api/user/login — аутентификация пользователя;
-	//POST /api/user/orders — загрузка пользователем номера заказа для расчёта;
-	//GET /api/user/orders — получение списка загруженных пользователем номеров заказов, статусов их обработки и информации о начислениях;
-	//GET /api/user/balance — получение текущего баланса счёта баллов лояльности пользователя;
-	//POST /api/user/balance/withdraw — запрос на списание баллов с накопительного счёта в счёт оплаты нового заказа;
-	//GET /api/user/withdrawals — получение информации о выводе средств с накопительного счёта пользователем.
+	// POST /api/user/login — аутентификация пользователя;
+	// POST /api/user/orders — загрузка пользователем номера заказа для расчёта;
+	// GET /api/user/orders — получение списка загруженных пользователем номеров заказов, статусов их обработки и информации о начислениях;
+	// GET /api/user/balance — получение текущего баланса счёта баллов лояльности пользователя;
+	// POST /api/user/balance/withdraw — запрос на списание баллов с накопительного счёта в счёт оплаты нового заказа;
+	// GET /api/user/withdrawals — получение информации о выводе средств с накопительного счёта пользователем.
 
 	e.POST("/api/user/register", application.App.UserController.UserRegister())
 	e.POST("/api/user/login", application.App.UserController.UserLogin())

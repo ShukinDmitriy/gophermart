@@ -3,6 +3,9 @@ package services_test
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/ShukinDmitriy/gophermart/internal/entities"
 	"github.com/ShukinDmitriy/gophermart/internal/models"
 	"github.com/ShukinDmitriy/gophermart/internal/services"
@@ -11,8 +14,6 @@ import (
 	"github.com/labstack/echo/v4"
 	. "github.com/onsi/ginkgo/v2"
 	"gorm.io/gorm"
-	"net/http"
-	"time"
 )
 
 var _ = Describe("AccrualService", func() {

@@ -2,8 +2,9 @@ package models
 
 import (
 	"errors"
-	"github.com/go-playground/validator/v10"
 	"strings"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type ValidationError map[string]interface{}

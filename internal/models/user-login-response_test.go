@@ -1,11 +1,12 @@
 package models
 
 import (
+	"testing"
+	"time"
+
 	"github.com/ShukinDmitriy/gophermart/internal/entities"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
-	"testing"
-	"time"
 )
 
 func TestMapUserToUserLoginResponse(t *testing.T) {

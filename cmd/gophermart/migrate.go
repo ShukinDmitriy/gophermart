@@ -2,13 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"os"
+	"path"
+
 	"github.com/ShukinDmitriy/gophermart/internal/config"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/labstack/echo/v4"
-	"os"
-	"path"
 )
 
 func runMigrate(e *echo.Echo, config config.Config) error {
