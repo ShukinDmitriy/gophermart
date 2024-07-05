@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func runMigrate(e *echo.Echo, config config.Config) error {
+func runMigrate(e *echo.Echo, config *config.Config) error {
 	db, err := sql.Open("postgres", config.DatabaseURI)
 	if err != nil {
 		e.Logger.Error("can't connect to db", err.Error())

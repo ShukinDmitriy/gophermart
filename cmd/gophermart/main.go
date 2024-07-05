@@ -3,36 +3,131 @@ package main
 import (
 	"context"
 	"errors"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
-
-	"github.com/ShukinDmitriy/gophermart/internal/application"
+	"flag"
 	"github.com/ShukinDmitriy/gophermart/internal/auth"
 	"github.com/ShukinDmitriy/gophermart/internal/config"
+	"github.com/ShukinDmitriy/gophermart/internal/controllers"
+	"github.com/ShukinDmitriy/gophermart/internal/repositories"
+	"github.com/ShukinDmitriy/gophermart/internal/services"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"go.uber.org/fx"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"net/http"
+	"os"
+	"time"
 )
 
 func main() {
-	LoadEnvFile()
+	fx.New(
+		fx.Provide(
+			NewHTTPServer,
+			NewConfig,
+			NewDB,
+			func(DB *gorm.DB) *repositories.AccountRepository {
+				return repositories.NewAccountRepository(DB)
+			},
+			func(DB *gorm.DB) *repositories.OperationRepository {
+				return repositories.NewOperationRepository(DB)
+			},
+			func(DB *gorm.DB) *repositories.OrderRepository {
+				return repositories.NewOrderRepository(DB)
+			},
+			func(DB *gorm.DB) *repositories.UserRepository {
+				return repositories.NewUserRepository(DB)
+			},
+			func() *http.Client {
+				return &http.Client{
+					Timeout: 10 * time.Second,
+				}
+			},
+			func(
+				conf *config.Config,
+				accountRepository *repositories.AccountRepository,
+				operationRepository *repositories.OperationRepository,
+				orderRepository *repositories.OrderRepository,
+				httpClient *http.Client,
+			) *services.AccrualService {
+				return services.NewAccrualService(
+					conf.AccrualSystemAddress,
+					accountRepository,
+					operationRepository,
+					orderRepository,
+					httpClient,
+				)
+			},
+			func(userRepository *repositories.UserRepository) *auth.AuthUser {
+				return auth.NewAuthUser(userRepository)
+			},
+			func(authUser *auth.AuthUser) *auth.AuthService {
+				return auth.NewAuthService(*authUser)
+			},
+			func(
+				authService *auth.AuthService,
+				accountRepository *repositories.AccountRepository,
+				operationRepository *repositories.OperationRepository,
+			) *controllers.BalanceController {
+				return controllers.NewBalanceController(
+					authService,
+					accountRepository,
+					operationRepository,
+				)
+			},
+			func(
+				authService *auth.AuthService,
+				accountRepository *repositories.AccountRepository,
+				operationRepository *repositories.OperationRepository,
+				orderRepository *repositories.OrderRepository,
+			) *controllers.OperationController {
+				return controllers.NewOperationController(
+					authService,
+					accountRepository,
+					operationRepository,
+					orderRepository,
+				)
+			},
+			func(
+				authService *auth.AuthService,
+				orderRepository *repositories.OrderRepository,
+				accrualService *services.AccrualService,
+			) *controllers.OrderController {
+				return controllers.NewOrderController(
+					authService,
+					orderRepository,
+					accrualService,
+				)
+			},
+			func(
+				authService *auth.AuthService,
+				userRepository *repositories.UserRepository,
+			) *controllers.UserController {
+				return controllers.NewUserController(
+					authService,
+					userRepository,
+				)
+			},
+		),
+		fx.Invoke(func(*echo.Echo) {}),
+		fx.Invoke(runMigrate),
+		fx.Invoke(func(accrualService *services.AccrualService, e *echo.Echo) {
+			go accrualService.ProcessOrders(e)
+			go accrualService.ProcessFailedOrders(e)
+		}),
+	).Run()
+}
 
-	conf := config.NewConfig()
-	parseFlags(conf)
-	parseEnvs(conf)
-
+func NewDB(conf *config.Config) *gorm.DB {
 	postgresqlURL := conf.DatabaseURI
 
 	if postgresqlURL == "" {
 		log.Fatal("no DATABASE_URI in .env")
-		return
+		return nil
 	}
 
 	db, err := gorm.Open(postgres.Open(postgresqlURL), &gorm.Config{
@@ -40,21 +135,60 @@ func main() {
 	})
 	if err != nil {
 		log.Fatal(err)
-		return
+		return nil
 	}
 
-	application.AppFactory(db, conf)
+	return db
+}
 
+func NewConfig() *config.Config {
+	conf := config.NewConfig()
+
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
+
+	flag.StringVar(&conf.RunAddress, "a", "localhost:8080", "Run address")
+	flag.StringVar(&conf.DatabaseURI, "d", "", "Database dsn")
+	flag.StringVar(&conf.AccrualSystemAddress, "r", "http://localhost:8082", "Accrual system address")
+	flag.StringVar(&conf.JwtSecretKey, "s", "", "JWT secret key")
+
+	flag.Parse()
+
+	runAddress, exists := os.LookupEnv("RUN_ADDRESS")
+	if exists {
+		conf.RunAddress = runAddress
+	}
+
+	databaseURI, exists := os.LookupEnv("DATABASE_URI")
+	if exists {
+		conf.DatabaseURI = databaseURI
+	}
+
+	accrualSystemAddress, exists := os.LookupEnv("ACCRUAL_SYSTEM_ADDRESS")
+	if exists {
+		conf.AccrualSystemAddress = accrualSystemAddress
+	}
+
+	jwtSecretKey, exists := os.LookupEnv("JWT_SECRET_KEY")
+	if exists {
+		conf.JwtSecretKey = jwtSecretKey
+	}
+
+	return conf
+}
+
+func NewHTTPServer(
+	lc fx.Lifecycle,
+	conf *config.Config,
+	authService *auth.AuthService,
+	balanceController *controllers.BalanceController,
+	operationController *controllers.OperationController,
+	orderController *controllers.OrderController,
+	userController *controllers.UserController,
+) *echo.Echo {
 	e := echo.New()
 	e.Logger.SetLevel(log.INFO)
-
-	go application.App.AccrualService.ProcessOrders(e)
-	go application.App.AccrualService.ProcessFailedOrders(e)
-
-	err = runMigrate(e, *conf)
-	if err != nil {
-		return
-	}
 
 	// middleware
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
@@ -65,14 +199,14 @@ func main() {
 	e.Use(middleware.Decompress())
 
 	jwtMiddleware := echojwt.WithConfig(echojwt.Config{
-		BeforeFunc: application.App.AuthService.BeforeFunc,
+		BeforeFunc: authService.BeforeFunc,
 		NewClaimsFunc: func(_ echo.Context) jwt.Claims {
 			return &auth.Claims{}
 		},
 		SigningKey:    []byte(auth.GetJWTSecret()),
 		SigningMethod: jwt.SigningMethodHS256.Alg(),
 		TokenLookup:   "cookie:access-token", // "<source>:<name>"
-		ErrorHandler:  application.App.AuthService.JWTErrorChecker,
+		ErrorHandler:  authService.JWTErrorChecker,
 	})
 
 	// routes
@@ -83,33 +217,30 @@ func main() {
 	// POST /api/user/balance/withdraw — запрос на списание баллов с накопительного счёта в счёт оплаты нового заказа;
 	// GET /api/user/withdrawals — получение информации о выводе средств с накопительного счёта пользователем.
 
-	e.POST("/api/user/register", application.App.UserController.UserRegister())
-	e.POST("/api/user/login", application.App.UserController.UserLogin())
-	e.POST("/api/user/orders", application.App.OrderController.CreateOrder(), jwtMiddleware)
-	e.GET("/api/user/orders", application.App.OrderController.GetOrders(), jwtMiddleware)
-	e.GET("/api/user/balance", application.App.BalanceController.GetBalance(), jwtMiddleware)
-	e.POST("/api/user/balance/withdraw", application.App.OperationController.CreateWithdraw(), jwtMiddleware)
-	e.GET("/api/user/withdrawals", application.App.OperationController.GetWithdrawals(), jwtMiddleware)
+	e.POST("/api/user/register", userController.UserRegister())
+	e.POST("/api/user/login", userController.UserLogin())
+	e.POST("/api/user/orders", orderController.CreateOrder(), jwtMiddleware)
+	e.GET("/api/user/orders", orderController.GetOrders(), jwtMiddleware)
+	e.GET("/api/user/balance", balanceController.GetBalance(), jwtMiddleware)
+	e.POST("/api/user/balance/withdraw", operationController.CreateWithdraw(), jwtMiddleware)
+	e.GET("/api/user/withdrawals", operationController.GetWithdrawals(), jwtMiddleware)
 
-	// Start gophermart
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go func() {
+				if err := e.Start(conf.RunAddress); err != nil && !errors.Is(err, http.ErrServerClosed) {
+					e.Logger.Fatal("shutting down the gophermart ", err.Error())
+				}
 
-	go func() {
-		if err := e.Start(conf.RunAddress); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			e.Logger.Fatal("shutting down the gophermart", err.Error())
-		}
+				e.Logger.Info("Running gophermart")
+			}()
 
-		e.Logger.Info("Running gophermart")
-	}()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			return e.Shutdown(ctx)
+		},
+	})
 
-	// Wait for interrupt signal to gracefully shutdown the server
-	<-ctx.Done()
-
-	// a timeout of 1 seconds
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	if err := e.Shutdown(ctx); err != nil {
-		e.Logger.Fatal(err)
-	}
+	return e
 }
